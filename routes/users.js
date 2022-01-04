@@ -6,8 +6,13 @@ const authenticate = require('../authenticate');
 const router = express.Router();
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  User.find()
+  .then(users => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json(users);
+  })
 });
 
 router.post('/signup', (req, res) => {
@@ -56,7 +61,8 @@ router.get('/logout', (req, res, next) => {
     req.session.destroy();
     res.clearCookie('session-id');
     res.redirect('/'); 
-  } else {
+  } 
+  else {
     const err = new Error('You are not logged in!');
     err.status = 401;
     return next(err);
